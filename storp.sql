@@ -1,0 +1,202 @@
+USE SHOPPE;
+
+-- SP USER
+DELIMITER //
+CREATE PROCEDURE INSERT_USER(
+								IN EMAIL_IN VARCHAR(50),
+                                IN  PASSWORD_IN VARCHAR(50)
+							)
+BEGIN
+		INSERT INTO `USER` (
+								EMAIL,
+                                `PASSWORD`
+							)
+        VALUE (EMAIL_IN,PASSWORD_IN);
+        
+END //
+DELIMITER ;
+
+-- SP CATEGORY
+DELIMITER //
+CREATE PROCEDURE INSERT_CATEGORY(IN NAME_IN VARCHAR(50))
+BEGIN
+		INSERT INTO CATEGORY (`NAME`)
+        VALUE (NAME_IN);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SHOW_ALL_CATEGORY()
+BEGIN
+		SELECT*FROM CATEGORY;
+END //
+DELIMITER ;
+
+-- SP PRODUCT
+DELIMITER //
+CREATE PROCEDURE INSERT_PRODUCT(
+								IN NAME_IN VARCHAR(50),
+                                IN  PRICE_IN BIGINT,
+                                IN  C_ID_IN INT
+							)
+BEGIN
+		INSERT INTO PRODUCT (
+								`NAME`,
+                                PRICE,
+                                C_ID
+							)
+        VALUE (NAME_IN,PRICE_IN,C_ID_IN);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SHOW_ALL_PRODUCT_CATEGORY_ID(IN C_ID_IN INT)
+BEGIN
+		SELECT*FROM PRODUCT WHERE C_ID = C_ID_IN;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SHOW_PRODUCT_DETAIL_ID_AND_VARIANT(IN P_ID_IN INT)
+BEGIN
+		SELECT*FROM PRODUCT WHERE ID = P_ID_IN;
+        SELECT*FROM VARIANT WHERE P_ID = P_ID_IN;
+END //
+DELIMITER ;
+
+-- SP VARIANT
+DELIMITER //
+CREATE PROCEDURE INSERT_VARIANT(
+								IN SIZE_IN INT,
+                                IN  COLOR_IN VARCHAR(30),
+                                IN  P_ID_IN INT
+							)
+BEGIN
+		INSERT INTO VARIANT (
+								SIZE,
+                                COLOR,
+                                P_ID
+							)
+        VALUE (SIZE_IN,COLOR_IN,P_ID_IN);
+END //
+DELIMITER ;
+
+-- SP CART
+DELIMITER //
+CREATE PROCEDURE INSERT_CART(IN U_ID_IN INT)
+BEGIN
+		INSERT INTO CART (U_ID)
+        VALUE (U_ID_IN);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SHOW_ALL_CART()
+BEGIN
+		SELECT*FROM `CART`;
+END //
+DELIMITER ;
+
+-- SP CART DETAIL
+DELIMITER //
+CREATE PROCEDURE INSERT_CART_DETAIL(
+								IN QUANTITY_IN INT,
+                                IN   P_ID_IN INT,
+                                IN  C_ID_IN INT,
+                                IN  V_ID_IN INT
+							)
+BEGIN
+		INSERT INTO CART_DETAIL (
+								QUANTITY,
+                                P_ID,
+                                C_ID,
+                                V_ID
+							)
+        VALUE (QUANTITY_IN,P_ID_IN,C_ID_IN,V_ID_IN);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SHOW_ALL_CART_DETAIL()
+BEGIN
+		SELECT*FROM CART_DETAIL;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE UPDATE_QUANTITY_CART_DETAIL_ID(
+								IN ID_IN INT,
+								IN QUANTITY_IN INT
+							)
+BEGIN
+		UPDATE CART_DETAIL
+        SET QUANTITY = QUANTITY_IN
+        WHERE ID = ID_IN;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SHOW_CART_DETAIL_TO_CART_ID(IN C_ID_IN INT)
+BEGIN
+		SELECT* FROM CART_DETAIL
+        WHERE C_ID = C_ID_IN;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE DELETE_CART_DETAIL_TO_CART_ID(IN C_ID_IN INT)
+BEGIN
+		DELETE FROM CART_DETAIL
+        WHERE C_ID = C_ID_IN;
+END //
+DELIMITER ;
+
+-- SP ORDER
+DELIMITER //
+CREATE PROCEDURE INSERT_ORDER(
+                                IN ADDRESS_FROM_IN VARCHAR(100),
+                                IN U_ID_IN INT
+								)
+BEGIN
+		INSERT INTO `ORDER` (
+								ADDRESS_FROM,
+                                U_ID
+							)
+        VALUE (ADDRESS_FROM_IN,U_ID_IN);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SHOW_ORDER()
+BEGIN
+		SELECT*FROM `ORDER`;
+END //
+DELIMITER ;
+
+-- SP ORDER DETAIL
+DELIMITER //
+CREATE PROCEDURE INSERT_ORDER_DETAIL(
+								IN QUANTITY_IN INT,
+                                IN  P_ID_IN INT,
+                                IN  O_ID_IN INT,
+                                IN  V_ID_IN INT
+							)
+BEGIN
+		INSERT INTO ORDER_DETAIL (
+								QUANTITY,
+                                P_ID,
+                                O_ID,
+                                V_ID
+							)
+        VALUE (QUANTITY_IN,P_ID_IN,O_ID_IN,V_ID_IN);
+END //
+DELIMITER ;
+
+CREATE VIEW XUAT_BAO_CAO 
+AS
+SELECT U.EMAIL,SUM(OD.QUANTITY*P.PRICE) AS TOTAL
+FROM `USER` U JOIN `ORDER` O ON U.ID = O.U_ID
+		JOIN ORDER_DETAIL OD ON O.ID = OD.O_ID
+        JOIN PRODUCT P ON OD.P_ID = P.ID
+GROUP BY U.EMAIL
+ORDER BY TOTAL ASC;
